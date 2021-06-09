@@ -1,0 +1,18 @@
+.container {
+    padding: 0.5rem 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    border-bottom: 1px solid rgba(black, .2);
+}
+
+.titleWrapper {
+    display: flex;
+    align-items: flex-end;
+}
+
+.hello {
+    opacity: .8;
+    margin-left: 1rem;
+}
+
