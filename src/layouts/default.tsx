@@ -3,18 +3,27 @@ import Head from 'next/head'
 import { useAuth } from 'providers/authProvider'
 import Login from 'templates/login'
 import Navigation from 'components/navigation'
+import styles from 'sass/layouts/default.module.scss'
 
 export default function Layout({
   children,
-  Footer,
 }: {
-  children: React.ReactNode,
-  Footer?: React.ReactNode,
+  children: React.ReactNode
 }) {
   const { user } = useAuth()
 
   if (!user) {
-    return <Login />
+    return (
+      <>
+        <Head>
+          <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        </Head>
+        <main className={styles.main}>
+          <Login />
+        </main>
+        <footer />
+      </>
+    )
   }
 
   return (
@@ -22,15 +31,13 @@ export default function Layout({
       <Head>
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       </Head>
-      <header>
+      <header className={styles.header}>
         <Navigation />
       </header>
-      <main>
+      <main className={styles.main}>
         { children }
       </main>
-      <footer>
-        { Footer }
-      </footer>
+      <footer />
     </>
   )
 }

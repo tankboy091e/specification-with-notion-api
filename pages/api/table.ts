@@ -14,7 +14,10 @@ handler.get(async (_: NextApiRequest, res: NextApiResponse) => {
     const keys = Object.keys(database.properties)
     const query = await getQuery()
     const data = query.results.map((value) => {
-      const row = {}
+      const { id } = value
+      const row = {
+        id,
+      }
       keys.forEach((key) => {
         const property = value.properties[key]
         if (!property) {
@@ -23,11 +26,14 @@ handler.get(async (_: NextApiRequest, res: NextApiResponse) => {
         }
         const { type } = property
         const content = value.properties[key][type]
-        if (type === 'checkbox' || type === 'url' || type === 'last_edited_time' || type === 'created_time') {
+        if (type === 'checkbox'
+        || type === 'url'
+        || type === 'last_edited_time'
+        || type === 'created_time') {
           row[key] = content
           return
         }
-        const getContent = (child: any) => {
+        row[key] = content.map((child: any) => {
           const { type: contentType } = child
           if (!contentType) {
             return child.name
@@ -40,8 +46,7 @@ handler.get(async (_: NextApiRequest, res: NextApiResponse) => {
             default:
               return null
           }
-        }
-        row[key] = content.map(getContent)
+        })
       })
       return row
     })

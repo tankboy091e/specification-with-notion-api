@@ -21,6 +21,7 @@ module.exports = {
   ],
   rules: {
     semi: [2, 'never'],
+    'no-restricted-syntax': 'off',
     'react/react-in-jsx-scope': 'off',
     'react/jsx-props-no-spreading': 'off',
     'linebreak-style': 0,

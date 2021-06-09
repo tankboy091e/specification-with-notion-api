@@ -1,9 +1,12 @@
+@use '../lib/colors.scss' as colors;
+
 .container {
-    padding: 0.5rem 1rem;
     display: flex;
     justify-content: space-between;
     align-items: flex-end;
-    border-bottom: 1px solid rgba(black, .2);
+    padding: 0.5rem 1rem;
+    width: 100%;
+    border-bottom: 1px solid colors.$primary-300;
 }
 
 .titleWrapper {
@@ -12,7 +15,6 @@
 }
 
 .hello {
-    opacity: .8;
+    color: colors.$primary-500;
     margin-left: 1rem;
 }
-
