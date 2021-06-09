@@ -12,12 +12,14 @@ export default function Login() {
   }
 
   return (
-    <form className={styles.container} onSubmit={onSubmit}>
-      <fieldset className={styles.inner}>
-        <legend className={styles.legend}>암호를 대세요</legend>
-        <input className={styles.password} type="text" ref={passwordRef} autoComplete="off" />
-        <input className={styles.submit} type="submit" value="로그인" />
-      </fieldset>
-    </form>
+    <section className={styles.container}>
+      <form className={styles.form} onSubmit={onSubmit}>
+        <fieldset className={styles.inner}>
+          <legend className={styles.legend}>로그인</legend>
+          <input className={styles.password} type="text" ref={passwordRef} autoComplete="off" placeholder="암호를 대세요" />
+          <input className={styles.submit} type="submit" value="로그인" />
+        </fieldset>
+      </form>
+    </section>
   )
 }

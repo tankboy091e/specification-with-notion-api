@@ -1,3 +1,28 @@
+@use '../lib/colors.scss' as colors;
+
 .container {
+    width: 100%;
     padding: 1rem;
+}
+
+.table {
+    width: 100%;
+    padding: 1rem;
+    background-color: colors.$background;
+}
+
+.row { 
+    th {
+        border-bottom: 2px solid colors.$accent;
+    }
+    td {
+        color: colors.$primary-600;
+        border-bottom: 1px solid colors.$primary-200;
+    }
+}
+
+.cell {
+   line-height: 1.5;
+   padding: 1.5rem 1rem;
+   text-align: center;
 }

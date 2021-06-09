@@ -8,6 +8,8 @@ export default notion
 
 export const databaseId = process.env.NOTION_DATABASE_ID
 
+export const properties = ['상태', '경로', '아이디', '컴포넌트', '기능', '완료', '담당자', '비고', '최종편집일시']
+
 export async function getDatabase() {
   const response = await notion.databases.retrieve({
     database_id: databaseId,

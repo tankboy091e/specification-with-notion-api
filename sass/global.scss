@@ -11,7 +11,7 @@
 html {
   width: 100%;
   height: 100%;
-  font-family: 'Core', sans-serif;
+  font-family: 'GmarketSansLight', sans-serif;
   @include mediaquery.mobile {
     font-size: 14px;
   }
@@ -25,6 +25,7 @@ html {
 
 body {
   position: relative;
+  line-height: 1;
   width: 100%;
   height: 100%;
 }
@@ -32,6 +33,10 @@ body {
 article, aside, details, figcaption, figure,
 footer, header, hgroup, menu, nav, section {
   display: block;
+}
+
+h1 {
+  font-size: 1.75rem;
 }
 
 img {
@@ -95,5 +100,5 @@ input[type="number"]::-webkit-inner-spin-button {
   align-items: center;
   min-height: 100vh;
   color: colors.$primary-700;
-  background-color: colors.$background-shade;
+  background-color: colors.$background;
 }
