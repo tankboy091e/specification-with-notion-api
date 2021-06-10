@@ -1,6 +1,7 @@
 import Extension from 'components/extension'
 import convertISODate from 'lib/util/date'
 import styles from 'sass/components/table.module.scss'
+import { FiExternalLink } from 'react-icons/fi'
 import { useTable } from '.'
 
 export default function Row({
@@ -35,12 +36,30 @@ export default function Row({
             )
           }
           const { type, value } = element[key]
-          if (key === '기능') {
+          if (key === '상태') {
+            if (!value) {
+              return '-'
+            }
+            const { name } = value
+            return <div>{name}</div>
+          }
+          if (key === '문서') {
             return (
-              <>
-                <input type="checkbox" value={element['완료'].value} disabled />
-                <span>{value}</span>
-              </>
+              <a className={styles.link} href={`${process.env.NOTION_ORIGIN}${value[0]?.replace(/-/g, '')}`} target="_blank" rel="noreferrer">
+                <FiExternalLink />
+              </a>
+            )
+          }
+          if (key === '기능') {
+            if (!value) {
+              return '-'
+            }
+            const { content, checked } = value
+            return (
+              <div className={styles.function}>
+                <input type="checkbox" checked={checked} disabled />
+                <span>{content}</span>
+              </div>
             )
           }
           if (type === 'last_edited_time' || type === 'created_time') {

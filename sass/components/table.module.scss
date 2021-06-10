@@ -5,6 +5,11 @@
     padding: 1rem;
 }
 
+.form {
+    display: flex;
+    flex-direction: column;
+}
+
 .table {
     width: 100%;
     padding: 1rem;
@@ -15,6 +20,13 @@
     th {
         border-bottom: 2px solid colors.$accent;
     }
+    th + th {
+        .inner {
+            margin: .5rem 0;
+            padding: 0 .5rem;
+            border-left: 1px solid colors.$primary-200;
+        }
+    }
     td {
         color: colors.$primary-600;
         border-bottom: 1px solid colors.$primary-200;
@@ -23,6 +35,41 @@
 
 .cell {
    line-height: 1.5;
-   padding: 1.5rem 1rem;
+   padding: 0.5rem 0;
    text-align: center;
+}
+
+.inputCell {
+    height: 100px;
+    padding: 1rem 0;
+    text-align: center;
+}
+
+.input {
+    padding: 0 1rem;
+    min-height: 100px;
+    width: 100%;
+    height: 100%;
+    border: none;
+    resize: none;
+}
+
+.assign {
+    padding: 0 .5rem;
+    width: 100%;
+    font-size: 1rem;
+    border: none;
+}
+
+.resize {
+    resize: vertical;
+}
+
+.submit {
+    margin: 1rem 0;
+    padding: 1rem 0;
+    font-size: 1.25rem;
+    border: none;
+    color: colors.$background;
+    background-color: colors.$accent;
 }
