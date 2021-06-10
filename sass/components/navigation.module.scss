@@ -4,14 +4,9 @@
     display: flex;
     justify-content: space-between;
     align-items: flex-end;
-    padding: 1rem 1rem;
+    padding: 0.5rem 1rem 0.75rem 1rem;
     width: 100%;
     border-bottom: 1px solid colors.$primary-300;
-}
-
-.titleWrapper {
-    display: flex;
-    align-items: flex-end;
 }
 
 .hello {

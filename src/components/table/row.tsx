@@ -38,7 +38,7 @@ export default function Row({
           const { type, value } = element[key]
           if (key === '상태') {
             if (!value) {
-              return '-'
+              return null
             }
             const { name } = value
             return <div>{name}</div>
@@ -52,7 +52,7 @@ export default function Row({
           }
           if (key === '기능') {
             if (!value) {
-              return '-'
+              return null
             }
             const { content, checked } = value
             return (
@@ -61,6 +61,9 @@ export default function Row({
                 <span>{content}</span>
               </div>
             )
+          }
+          if (key === '경로') {
+            return <a className={styles.route} href={`${process.env.ORIGIN}${value}`} target="_blank" rel="noreferrer">{value}</a>
           }
           if (type === 'last_edited_time' || type === 'created_time') {
             const {
@@ -75,16 +78,20 @@ export default function Row({
           }
           if (Array.isArray(value)) {
             if (value.length > 0) {
+              if (!value[0]) {
+                return null
+              }
               return value
             }
           } else if (value) {
             return value
           }
-          return '-'
+          return null
         }
+        console.log(getValue())
         return (
           <td key={keyWithId} className={styles.cell}>
-            {getValue()}
+            {getValue() || '-'}
           </td>
         )
       })}

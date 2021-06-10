@@ -73,3 +73,12 @@
     color: colors.$background;
     background-color: colors.$accent;
 }
+
+.function {
+    display: flex;
+    align-items: center;
+    padding: 0 1rem;
+    input {
+        margin-right: .5rem;
+    }
+}

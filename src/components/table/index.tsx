@@ -25,7 +25,7 @@ type State = 'default' | 'pending'
 export default function Table() {
   const [state, setState] = useState<State>('default')
 
-  const { data } = useSWR('/api/table', fetcher)
+  const { data, mutate } = useSWR('/api/table', fetcher)
   const [inputs, setInputs] = useState<number[]>([])
 
   if (!data) {
@@ -48,14 +48,27 @@ export default function Table() {
       const payloadData = {
         id,
       }
+
       const textareas = element.querySelectorAll('textarea').values()
+      const validations = ['경로', '아이디', '컴포넌트', '기능']
+
       for (const textarea of textareas) {
-        payloadData[textarea.getAttribute('name')] = textarea.value
+        const name = textarea.getAttribute('name')
+        const { value } = textarea
+        if (validations.includes(name) && !value) {
+          return null
+        }
+        payloadData[name] = value
       }
-      const select = element.querySelector('select')
-      payloadData[select.getAttribute('name')] = select.value
       return payloadData
     })
+
+    if (payload.includes(null)) {
+      alert('빈칸을 채워주세요')
+      setState('default')
+      return
+    }
+
     const res = await hermes('/api/table', {
       body: JSON.stringify(payload),
       headers: {
@@ -69,6 +82,7 @@ export default function Table() {
       setState('default')
       return
     }
+    mutate()
     setState('default')
   }
 
@@ -93,7 +107,7 @@ export default function Table() {
   const colRatio : number[] = keys.map((key: string) => {
     switch (key) {
       case '기능':
-        return 2.5
+        return 3
       case '상태':
         return 0.5
       case '배정':

@@ -7,8 +7,8 @@ export default function Navigation() {
 
   return (
     <section className={styles.container}>
-      <div className={styles.titleWrapper}>
-        <Title />
+      <Title />
+      <div className={styles.wrapper}>
         <span className={styles.hello}>
           안녕하세요
           <span className={styles.name}>
@@ -16,10 +16,10 @@ export default function Navigation() {
           </span>
           님
         </span>
+        <button type="button" onClick={signout}>
+          로그아웃
+        </button>
       </div>
-      <button type="button" onClick={signout}>
-        로그아웃
-      </button>
     </section>
   )
 }
