@@ -34,15 +34,23 @@
 }
 
 .cell {
+   height: 50px;
    line-height: 1.5;
-   padding: 0.5rem 0;
    text-align: center;
 }
 
 .inputCell {
-    height: 100px;
+    height: 50px;
     padding: 1rem 0;
     text-align: center;
+}
+
+.cellButton {
+    width: 100%;
+    height: 100%;
+    &:hover {
+        background-color: colors.$background-shade;
+    }
 }
 
 .input {
@@ -81,4 +89,14 @@
     input {
         margin-right: .5rem;
     }
+}
+
+.frame {
+    padding: .5rem;
+}
+
+.face {
+    padding: .5rem;
+    display: block;
+    border-radius: 50%;
 }

@@ -109,62 +109,94 @@ export async function createInDatabase(data: any) {
 }
 
 export async function createInTodo(data: any) {
-  const properties = {}
-  properties['이름'] = {
-    title: [
-      {
-        text: {
-          content: data['아이디'],
-        },
-      },
-    ],
-  }
-  properties['상태'] = {
-    select: {
-      name: '시작 전',
-    },
+  const result = {
+    pageId: null,
+    blockId: null,
   }
 
+  const properties = {}
   const children = []
 
-  const headingBlock = {
-    object: 'block',
-    type: 'heading_2',
-    heading_2: {
-      text: [
+  const todoQueryResponse = await getTodoQuery()
+  const existingTodo = todoQueryResponse.results.find((value) => value.properties['이름'][value.properties['이름'].type].find((value : any) => value.text.content === data['아이디']))
+
+  if (!existingTodo) {
+    properties['이름'] = {
+      title: [
         {
-          type: 'text',
           text: {
-            content: data['컴포넌트'],
+            content: data['아이디'],
           },
         },
       ],
-    },
-  }
-  children.push(headingBlock)
+    }
+    properties['상태'] = {
+      select: {
+        name: '시작 전',
+      },
+    }
+  } else {
+    result.pageId = existingTodo.id
+    const todoBlocks = await retreiveBlock(result.pageId)
 
-  const todoBlock = {
-    object: 'block',
-    type: 'to_do',
-    to_do: {
-      text: [
-        {
-          type: 'text',
-          text: {
-            content: data['기능'],
-          },
+    const existingHeading = todoBlocks.results.find((value) => value['heading_2']?.text[0].text.content === data['컴포넌트'])
+
+    if (!existingHeading) {
+      const headingBlock = {
+        object: 'block',
+        type: 'heading_2',
+        heading_2: {
+          text: [
+            {
+              type: 'text',
+              text: {
+                content: data['컴포넌트'],
+              },
+            },
+          ],
         },
-      ],
-    },
-  }
-  children.push(todoBlock)
+      }
+      children.push(headingBlock)
+    }
 
-  const response = await notion.pages.create({
-    parent: {
-      database_id: todoId,
-    },
-    properties,
-    children,
-  })
-  return response
+    const todoBlock = {
+      object: 'block',
+      type: 'to_do',
+      to_do: {
+        text: [
+          {
+            type: 'text',
+            text: {
+              content: data['기능'],
+            },
+          },
+        ],
+      },
+    }
+    children.push(todoBlock)
+  }
+
+  if (!existingTodo) {
+    const response = await notion.pages.create({
+      parent: {
+        database_id: todoId,
+      },
+      properties,
+      children,
+    })
+    result.pageId = response.id
+  } else {
+    await notion.blocks.children.append({
+      block_id: result.pageId,
+      children,
+    })
+  }
+
+  const pageResponse = await retreiveBlock(result.pageId)
+
+  const { id: blockId } = pageResponse.results.find((value) => value.type === 'to_do')
+
+  result.blockId = blockId
+
+  return result
 }

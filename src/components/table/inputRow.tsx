@@ -1,15 +1,38 @@
 import { cn } from 'lib/util'
+import { useEffect, useRef } from 'react'
 import styles from 'sass/components/table.module.scss'
 import Loading from 'widgets/loading'
 import { useTable } from '.'
 
-export default function InputRow({ index }: { index: number }) {
-  const { state, keys, onCancle } = useTable()
+interface Data {
+  [key: string]: string
+}
 
-  const id = null
+export default function InputRow({ index, data }: { index: number, data?: Data }) {
+  const {
+    state, keys, onCancle,
+  } = useTable()
+
+  const textareaKeys = ['경로', '아이디', '컴포넌트', '기능', '비고']
+
+  const textareaRef = useRef<{
+    [key: string]: HTMLTextAreaElement
+  }>({})
+
+  useEffect(() => {
+    if (!data) {
+      return
+    }
+    for (const key of textareaKeys) {
+      if (!data[key]) {
+        continue
+      }
+      textareaRef.current[key].value = data[key]
+    }
+  }, [data])
 
   return (
-    <tr id={id} className={cn(styles.row, 'inputRow')}>
+    <tr className={cn(styles.row, 'inputRow')}>
       {keys.map((key: any) => {
         const getValue = () => {
           if (state === 'pending') {
@@ -31,9 +54,16 @@ export default function InputRow({ index }: { index: number }) {
               </select>
             )
           }
-          const textareaKeys = ['경로', '아이디', '컴포넌트', '기능', '비고']
           if (textareaKeys.includes(key)) {
-            return <textarea className={cn(styles.input, key === '기능' && styles.resize)} name={key} placeholder="여기에 입력하세요" />
+            return (
+              <textarea
+                className={cn(styles.input, key === '기능' && styles.resize)}
+                // eslint-disable-next-line no-return-assign
+                ref={(ref) => textareaRef.current[key] = ref}
+                name={key}
+                placeholder="여기에 입력하세요"
+              />
+            )
           }
           return '-'
         }

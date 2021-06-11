@@ -4,12 +4,8 @@ import styles from 'sass/components/table.module.scss'
 import { FiExternalLink } from 'react-icons/fi'
 import { useTable } from '.'
 
-export default function Row({
-  element,
-}: {
-  element: any
-}) {
-  const { keys } = useTable()
+export default function Row({ element }: { element: any }) {
+  const { keys, onClick } = useTable()
 
   const { id } = element
 
@@ -43,9 +39,29 @@ export default function Row({
             const { name } = value
             return <div>{name}</div>
           }
+          if (key === '배정') {
+            if (!value) {
+              return null
+            }
+            const { name, url } = value
+            return (
+              <figure className={styles.frame}>
+                <img className={styles.face} src={url} alt="" />
+                <figcaption className={styles.name}>{name}</figcaption>
+              </figure>
+            )
+          }
           if (key === '문서') {
             return (
-              <a className={styles.link} href={`${process.env.NOTION_ORIGIN}${value[0]?.replace(/-/g, '')}`} target="_blank" rel="noreferrer">
+              <a
+                className={styles.link}
+                href={`${process.env.NOTION_ORIGIN}${value[0]?.replace(
+                  /-/g,
+                  '',
+                )}`}
+                target="_blank"
+                rel="noreferrer"
+              >
                 <FiExternalLink />
               </a>
             )
@@ -63,7 +79,16 @@ export default function Row({
             )
           }
           if (key === '경로') {
-            return <a className={styles.route} href={`${process.env.ORIGIN}${value}`} target="_blank" rel="noreferrer">{value}</a>
+            return (
+              <a
+                className={styles.route}
+                href={`${process.env.ORIGIN}${value}`}
+                target="_blank"
+                rel="noreferrer"
+              >
+                {value}
+              </a>
+            )
           }
           if (type === 'last_edited_time' || type === 'created_time') {
             const {
@@ -71,8 +96,9 @@ export default function Row({
             } = convertISODate(value)
             return (
               <>
-                <div>{`${year}년 ${month}월 ${date}일`}</div>
-                <div>{`${hour}시 ${minute}분`}</div>
+                {`${year}년 ${month}월 ${date}일`}
+                <br />
+                {`${hour}시 ${minute}분`}
               </>
             )
           }
@@ -88,9 +114,28 @@ export default function Row({
           }
           return null
         }
-        console.log(getValue())
+        const interactiveKeys = ['경로', '아이디', '컴포넌트']
+        if (interactiveKeys.includes(key)) {
+          return (
+            <td
+              key={keyWithId}
+              className={styles.cell}
+            >
+              <button
+                className={styles.cellButton}
+                type="button"
+                onClick={() => onClick(key, element[key]?.value)}
+              >
+                {getValue() || '-'}
+              </button>
+            </td>
+          )
+        }
         return (
-          <td key={keyWithId} className={styles.cell}>
+          <td
+            key={keyWithId}
+            className={styles.cell}
+          >
             {getValue() || '-'}
           </td>
         )

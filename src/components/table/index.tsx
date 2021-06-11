@@ -12,8 +12,10 @@ import Row from './row'
 
 interface TableContextProps {
   state: State,
+  defaultInputData: { [key: string]: string }
   keys: string[]
   onCancle: (index: number) => void
+  onClick: (key:string, content: string) => void
 }
 
 const TableContext = createContext<TableContextProps>(null)
@@ -27,6 +29,7 @@ export default function Table() {
 
   const { data, mutate } = useSWR('/api/table', fetcher)
   const [inputs, setInputs] = useState<number[]>([])
+  const [defaultInputData, setDefaultInputData] = useState<{ [key: string]: string }>(null)
 
   if (!data) {
     return (
@@ -82,6 +85,8 @@ export default function Table() {
       setState('default')
       return
     }
+    const { message } = await res.json()
+    alert(message)
     mutate()
     setState('default')
   }
@@ -94,15 +99,18 @@ export default function Table() {
     setInputs(inputs.filter((value) => value !== index))
   }
 
+  const onClick = (key: string, content: string) => {
+    const newData = {}
+    newData[key] = content
+    setDefaultInputData({
+      ...defaultInputData,
+      ...newData,
+    })
+  }
+
   const { table } = data
 
   const keys = ['상태', '문서', '경로', '아이디', '컴포넌트', '기능', '비고', '배정', '최종편집일시', '기타']
-
-  const value = {
-    state,
-    keys,
-    onCancle,
-  }
 
   const colRatio : number[] = keys.map((key: string) => {
     switch (key) {
@@ -126,6 +134,14 @@ export default function Table() {
   const colTotal = colRatio.reduce((acc, cur) => (
     acc + cur
   ), 0)
+
+  const value = {
+    state,
+    defaultInputData,
+    keys,
+    onCancle,
+    onClick,
+  }
 
   return (
     <section className={styles.container}>
@@ -157,7 +173,7 @@ export default function Table() {
               }
               {
                 inputs.map((key) => (
-                  <InputRow key={key} index={key} />
+                  <InputRow key={key} index={key} data={defaultInputData} />
                 ))
               }
             </tbody>

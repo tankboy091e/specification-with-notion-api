@@ -63,7 +63,7 @@ async function getDatabaseTable() {
             .find((result) => content === result[result.type].text[0].text.content)
           const { checked } = block['to_do']
           row[key] = {
-            type: 'rich_text',
+            type: 'none',
             value: {
               content,
               checked,
@@ -71,7 +71,30 @@ async function getDatabaseTable() {
           }
         } catch {
           row[key] = {
-            type: 'rich_text',
+            type: 'none',
+            value: null,
+          }
+        }
+        continue
+      }
+      if (key === '배정') {
+        try {
+          const pid = row['문서'].value[0]
+          const response = await retreive(pid)
+          const content = response.properties['배정']['people']
+          // eslint-disable-next-line camelcase
+          const { name, avatar_url, person } = content[0]
+          row[key] = {
+            type: 'none',
+            value: {
+              name,
+              url: avatar_url,
+              person: person.email,
+            },
+          }
+        } catch {
+          row[key] = {
+            type: 'none',
             value: null,
           }
         }
@@ -129,9 +152,9 @@ handler.post(async (req: NextApiRequest, res: NextApiResponse) => {
 
     for await (const row of rows) {
       const { id, ...data } = row
-      const createdTodo = await createInTodo(data)
-      const todoId = createdTodo.id
-      data['문서'] = todoId
+      const { pageId, blockId } = await createInTodo(data)
+      data['문서'] = pageId
+      data['블록'] = blockId
       await createInDatabase(data)
     }
     res.status(201).json({ message: 'resource posted successfully' })

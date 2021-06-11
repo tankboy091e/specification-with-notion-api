@@ -1,14 +1,12 @@
 export default function convertISODate(ISO: string) {
-  const [dateArray, timeArray] = ISO.split('T')
-  const [year, month, date] = dateArray.split('-').map((value) => parseInt(value, 10))
-  const [hour, minute, second] = timeArray.replace('Z', '').split(':').map((value) => parseInt(value, 10))
+  const date = new Date(ISO)
   return {
-    year,
-    month,
-    date,
-    hour,
-    minute,
-    second,
+    year: date.getFullYear(),
+    month: date.getMonth(),
+    date: date.getDate(),
+    hour: date.getHours(),
+    minute: date.getMinutes(),
+    second: date.getSeconds(),
   }
 }
 
