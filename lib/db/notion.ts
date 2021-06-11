@@ -30,15 +30,21 @@ export async function getTodo() {
   return getDatabases(todoId)
 }
 
-async function getQuery(id: string) {
+async function getQuery(id: string, sorts?: any) {
   const response = await notion.databases.query({
     database_id: id,
+    sorts,
   })
   return response
 }
 
 export async function getDatabaseQuery() {
-  return getQuery(databaseId)
+  return getQuery(databaseId, [
+    {
+      property: '문서',
+      direction: 'ascending',
+    },
+  ])
 }
 
 export async function getTodoQuery() {
@@ -135,6 +141,21 @@ export async function createInTodo(data: any) {
         name: '시작 전',
       },
     }
+    const headingBlock = {
+      object: 'block',
+      type: 'heading_2',
+      heading_2: {
+        text: [
+          {
+            type: 'text',
+            text: {
+              content: data['컴포넌트'],
+            },
+          },
+        ],
+      },
+    }
+    children.push(headingBlock)
   } else {
     result.pageId = existingTodo.id
     const todoBlocks = await retreiveBlock(result.pageId)
@@ -158,23 +179,23 @@ export async function createInTodo(data: any) {
       }
       children.push(headingBlock)
     }
-
-    const todoBlock = {
-      object: 'block',
-      type: 'to_do',
-      to_do: {
-        text: [
-          {
-            type: 'text',
-            text: {
-              content: data['기능'],
-            },
-          },
-        ],
-      },
-    }
-    children.push(todoBlock)
   }
+
+  const todoBlock = {
+    object: 'block',
+    type: 'to_do',
+    to_do: {
+      text: [
+        {
+          type: 'text',
+          text: {
+            content: data['기능'],
+          },
+        },
+      ],
+    },
+  }
+  children.push(todoBlock)
 
   if (!existingTodo) {
     const response = await notion.pages.create({

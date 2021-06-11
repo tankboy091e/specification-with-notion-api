@@ -1,4 +1,3 @@
-/* eslint-disable no-shadow */
 /* eslint-disable dot-notation */
 import getHandler from 'lib/api/handler'
 import {
@@ -31,15 +30,24 @@ async function getDatabaseTable() {
   const keys = [...databaseProperties, ...todoProperties]
   const query = await getDatabaseQuery()
   const result = []
-  for await (const value of query.results) {
+  for (let i = 0; i < query.results.length; i++) {
+    // eslint-disable-next-line no-plusplus
+    const value = query.results[i]
     const { id } = value
     const row = {
       id,
     }
     for await (const key of keys) {
       if (key === '상태') {
+        const pid = row['문서'].value[0]
+        if (i > 0) {
+          const previousId = result[i - 1]['문서'].value[0]
+          if (previousId === pid) {
+            row[key] = result[i - 1]['상태']
+            continue
+          }
+        }
         try {
-          const pid = row['문서'].value[0]
           const response = await retreive(pid)
           row[key] = {
             type: 'multi_select',
@@ -80,17 +88,19 @@ async function getDatabaseTable() {
       if (key === '배정') {
         try {
           const pid = row['문서'].value[0]
+          if (i > 0) {
+            const previousId = result[i - 1]['문서'].value[0]
+            if (previousId === pid) {
+              row[key] = result[i - 1]['배정']
+              continue
+            }
+          }
           const response = await retreive(pid)
           const content = response.properties['배정']['people']
           // eslint-disable-next-line camelcase
-          const { name, avatar_url, person } = content[0]
           row[key] = {
             type: 'none',
-            value: {
-              name,
-              url: avatar_url,
-              person: person.email,
-            },
+            value: content,
           }
         } catch {
           row[key] = {

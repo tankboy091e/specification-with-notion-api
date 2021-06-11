@@ -43,12 +43,15 @@ export default function Row({ element }: { element: any }) {
             if (!value) {
               return null
             }
-            const { name, url } = value
             return (
-              <figure className={styles.frame}>
-                <img className={styles.face} src={url} alt="" />
-                <figcaption className={styles.name}>{name}</figcaption>
-              </figure>
+              <div className={styles.frameWrapper}>
+                {value.map(({ name, avatar_url: url }) => (
+                  <figure key={Math.random()} className={styles.frame}>
+                    {/* <img className={styles.face} src={url} alt="" /> */}
+                    <figcaption className={styles.name}>{name}</figcaption>
+                  </figure>
+                ))}
+              </div>
             )
           }
           if (key === '문서') {

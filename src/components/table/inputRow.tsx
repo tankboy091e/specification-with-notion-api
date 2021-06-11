@@ -27,6 +27,9 @@ export default function InputRow({ index, data }: { index: number, data?: Data }
       if (!data[key]) {
         continue
       }
+      if (textareaRef.current[key].value) {
+        continue
+      }
       textareaRef.current[key].value = data[key]
     }
   }, [data])
@@ -35,9 +38,6 @@ export default function InputRow({ index, data }: { index: number, data?: Data }
     <tr className={cn(styles.row, 'inputRow')}>
       {keys.map((key: any) => {
         const getValue = () => {
-          if (state === 'pending') {
-            return <Loading size={32} />
-          }
           if (key === '최종편집일시' || key === '배정') {
             return '-'
           }
@@ -69,6 +69,7 @@ export default function InputRow({ index, data }: { index: number, data?: Data }
         }
         return (
           <td key={`${key}input}`} className={styles.inputCell}>
+            {state === 'pending' && <Loading size={28} />}
             {getValue()}
           </td>
         )

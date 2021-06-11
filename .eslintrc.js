@@ -21,6 +21,8 @@ module.exports = {
   ],
   rules: {
     semi: [2, 'never'],
+    'no-await-in-loop': 'off',
+    'no-shadow': 'off',
     'no-continue': 'off',
     'no-restricted-syntax': 'off',
     'react/react-in-jsx-scope': 'off',

@@ -91,11 +91,22 @@
     }
 }
 
-.frame {
+.frameWrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
     padding: .5rem;
 }
 
+.frame {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
 .face {
+    width: 48px;
     padding: .5rem;
     display: block;
     border-radius: 50%;

@@ -1,7 +1,7 @@
 import fetcher from 'lib/api/fetcher'
 import hermes from 'lib/api/hermes'
 import {
-  createContext, FormEvent, useContext, useState,
+  createContext, FormEvent, useContext, useEffect, useState,
 } from 'react'
 import styles from 'sass/components/table.module.scss'
 import useSWR from 'swr'
@@ -30,6 +30,12 @@ export default function Table() {
   const { data, mutate } = useSWR('/api/table', fetcher)
   const [inputs, setInputs] = useState<number[]>([])
   const [defaultInputData, setDefaultInputData] = useState<{ [key: string]: string }>(null)
+
+  useEffect(() => {
+    if (defaultInputData) {
+      setDefaultInputData(null)
+    }
+  }, [defaultInputData])
 
   if (!data) {
     return (
@@ -88,6 +94,7 @@ export default function Table() {
     const { message } = await res.json()
     alert(message)
     mutate()
+    setInputs([])
     setState('default')
   }
 
