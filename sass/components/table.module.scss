@@ -21,9 +21,7 @@
         border-bottom: 2px solid colors.$accent;
     }
     th + th {
-        .inner {
-            margin: .5rem 0;
-            padding: 0 .5rem;
+        .button {
             border-left: 1px solid colors.$primary-200;
         }
     }
@@ -31,6 +29,26 @@
         color: colors.$primary-600;
         border-bottom: 1px solid colors.$primary-200;
     }
+}
+
+.inner {
+    padding: .5rem 0;
+    width: 100%;
+    height: 100%;
+    &:hover {
+        color: colors.$background;
+        background-color: colors.$accent;
+    }
+}
+
+.button {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+    width: 100%;
+    height: 100%;
+    transition: color .25s, background-color .25s;
 }
 
 .cell {
@@ -48,6 +66,7 @@
 .cellButton {
     width: 100%;
     height: 100%;
+    transition: background-color .25s;
     &:hover {
         background-color: colors.$background-shade;
     }

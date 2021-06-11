@@ -1,7 +1,7 @@
 import fetcher from 'lib/api/fetcher'
 import hermes from 'lib/api/hermes'
 import {
-  createContext, FormEvent, useContext, useEffect, useState,
+  createContext, FormEvent, useContext, useEffect, useRef, useState,
 } from 'react'
 import styles from 'sass/components/table.module.scss'
 import useSWR from 'swr'
@@ -14,8 +14,8 @@ interface TableContextProps {
   state: State,
   defaultInputData: { [key: string]: string }
   keys: string[]
-  onCancle: (index: number) => void
-  onClick: (key:string, content: string) => void
+  cancle: (index: number) => void
+  onTableHeadClick: (key:string, content: string) => void
 }
 
 const TableContext = createContext<TableContextProps>(null)
@@ -25,11 +25,17 @@ export const useTable = () => useContext(TableContext)
 type State = 'default' | 'pending'
 
 export default function Table() {
-  const [state, setState] = useState<State>('default')
-
   const { data, mutate } = useSWR('/api/table', fetcher)
+
+  const [state, setState] = useState<State>('default')
   const [inputs, setInputs] = useState<number[]>([])
   const [defaultInputData, setDefaultInputData] = useState<{ [key: string]: string }>(null)
+  const [currentArrange, setCurrentArrage] = useState<{key: string, way: number}>({ key: '상태', way: -1 })
+  const [arrangeData, setArrangeData] = useState<{ [key: string]: number }>({})
+
+  const arrangeDataRef = useRef(arrangeData)
+
+  const keys = ['상태', '문서', '경로', '아이디', '컴포넌트', '기능', '비고', '배정', '최종편집일시', '기타']
 
   useEffect(() => {
     if (defaultInputData) {
@@ -37,13 +43,17 @@ export default function Table() {
     }
   }, [defaultInputData])
 
-  if (!data) {
-    return (
-      <section className={styles.container}>
-        <Loading />
-      </section>
-    )
-  }
+  useEffect(() => {
+    arrangeDataRef.current = arrangeData
+  }, [arrangeData])
+
+  useEffect(() => {
+    const defaultArrangeData = {}
+    keys.forEach((value) => {
+      defaultArrangeData[value] = 1
+    })
+    setArrangeData(defaultArrangeData)
+  }, [])
 
   const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -98,15 +108,82 @@ export default function Table() {
     setState('default')
   }
 
-  const onAdd = () => {
+  const sort = (key: string, way: number, a: any, b: any) => {
+    const getValue = () => {
+      const va = a[key].value
+      const vb = b[key].value
+      const getAssignValue = (value : any) => {
+        if (value.length > 0) {
+          return value[0].name
+        }
+        return ''
+      }
+      const convertIfArray = (value: any) => {
+        if (Array.isArray(value)) {
+          return value[0]
+        }
+        return value
+      }
+
+      switch (key) {
+        case '상태':
+          return {
+            va: va.id,
+            vb: vb.id,
+          }
+        case '문서':
+          return {
+            va: va[0],
+            vb: vb[0],
+          }
+        case '기능':
+          return {
+            va: a[key].value.content,
+            vb: b[key].value.content,
+          }
+        case '배정':
+          return {
+            va: getAssignValue(va),
+            vb: getAssignValue(vb),
+          }
+        default:
+          return {
+            va: convertIfArray(va),
+            vb: convertIfArray(vb),
+          }
+      }
+    }
+    const { va, vb } = getValue()
+    if (va > vb) return -1 * way
+    if (va < vb) return 1 * way
+    return 0
+  }
+
+  const arrange = (key : string) => {
+    setCurrentArrage((arrange) => {
+      const { key: previouseKey, way } = arrange
+      if (previouseKey === key) {
+        return {
+          key,
+          way: way * -1,
+        }
+      }
+      return {
+        key,
+        way: -1,
+      }
+    })
+  }
+
+  const add = () => {
     setInputs((array) => [...array, Math.random()])
   }
 
-  const onCancle = (index: number) => {
+  const cancle = (index: number) => {
     setInputs(inputs.filter((value) => value !== index))
   }
 
-  const onClick = (key: string, content: string) => {
+  const onTableHeadClick = (key: string, content: string) => {
     const newData = {}
     newData[key] = content
     setDefaultInputData({
@@ -115,23 +192,21 @@ export default function Table() {
     })
   }
 
-  const { table } = data
-
-  const keys = ['상태', '문서', '경로', '아이디', '컴포넌트', '기능', '비고', '배정', '최종편집일시', '기타']
-
   const colRatio : number[] = keys.map((key: string) => {
     switch (key) {
       case '기능':
-        return 3
-      case '상태':
-        return 0.5
-      case '배정':
-        return 0.5
-      case '문서':
-        return 0.5
-      case '기타':
-        return 0.5
+        return 5
       case '비고':
+        return 2.5
+      case '컴포넌트':
+        return 2.5
+      case '최종편집일시':
+        return 2
+      case '경로':
+        return 2
+      case '아이디':
+        return 2
+      case '배정':
         return 1.5
       default:
         return 1
@@ -146,9 +221,20 @@ export default function Table() {
     state,
     defaultInputData,
     keys,
-    onCancle,
-    onClick,
+    cancle,
+    onTableHeadClick,
   }
+
+  if (!data) {
+    return (
+      <section className={styles.container}>
+        <Loading />
+      </section>
+    )
+  }
+
+  const { table } = data
+  const { key, way } = currentArrange
 
   return (
     <section className={styles.container}>
@@ -165,16 +251,31 @@ export default function Table() {
             </colgroup>
             <tbody className={styles.body}>
               <tr className={styles.row}>
-                {keys.map((key: any) => (
-                  <th key={key} className={styles.cell}>
-                    <div className={styles.inner}>
-                      {key}
-                    </div>
-                  </th>
-                ))}
+                {keys.map((key: any) => {
+                  if (key === '기타') {
+                    return (
+                      <th key={key} className={styles.cell}>
+                        <div className={styles.inner}>
+                          <div className={styles.button}>
+                            {key}
+                          </div>
+                        </div>
+                      </th>
+                    )
+                  }
+                  return (
+                    <th key={key} className={styles.cell}>
+                      <div className={styles.inner}>
+                        <button className={styles.button} type="button" onClick={() => arrange(key)}>
+                          {key}
+                        </button>
+                      </div>
+                    </th>
+                  )
+                })}
               </tr>
               {
-                table.map((element: any) => (
+                table.sort((a : any, b: any) => sort(key, way, a, b)).map((element: any) => (
                   <Row key={element.id} element={element} />
                 ))
               }
@@ -186,7 +287,7 @@ export default function Table() {
             </tbody>
           </table>
           {inputs.length > 0 && <input className={styles.submit} type="submit" value="제출" />}
-          <AddButton onClick={onAdd} />
+          <AddButton onClick={add} />
         </TableContext.Provider>
       </form>
     </section>

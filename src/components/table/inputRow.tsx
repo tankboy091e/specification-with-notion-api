@@ -10,7 +10,7 @@ interface Data {
 
 export default function InputRow({ index, data }: { index: number, data?: Data }) {
   const {
-    state, keys, onCancle,
+    state, keys, cancle,
   } = useTable()
 
   const textareaKeys = ['경로', '아이디', '컴포넌트', '기능', '비고']
@@ -42,7 +42,7 @@ export default function InputRow({ index, data }: { index: number, data?: Data }
             return '-'
           }
           if (key === '기타') {
-            return <button className={styles.cancle} type="button" onClick={() => onCancle(index)}>취소</button>
+            return <button className={styles.cancle} type="button" onClick={() => cancle(index)}>취소</button>
           }
           if (key === '배정') {
             const list = ['없음', ...process.env.MEMBER_LIST.split('|')]

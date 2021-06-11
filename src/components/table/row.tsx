@@ -5,7 +5,7 @@ import { FiExternalLink } from 'react-icons/fi'
 import { useTable } from '.'
 
 export default function Row({ element }: { element: any }) {
-  const { keys, onClick } = useTable()
+  const { keys, onTableHeadClick } = useTable()
 
   const { id } = element
 
@@ -127,7 +127,7 @@ export default function Row({ element }: { element: any }) {
               <button
                 className={styles.cellButton}
                 type="button"
-                onClick={() => onClick(key, element[key]?.value)}
+                onClick={() => onTableHeadClick(key, element[key]?.value)}
               >
                 {getValue() || '-'}
               </button>
