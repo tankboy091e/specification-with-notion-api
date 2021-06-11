@@ -2,15 +2,16 @@ import Extension from 'components/extension'
 import convertISODate from 'lib/util/date'
 import styles from 'sass/components/table.module.scss'
 import { FiExternalLink } from 'react-icons/fi'
+import React from 'react'
 import { useTable } from '.'
 
-export default function Row({ element }: { element: any }) {
+export default function Row({ index, element }: { index: number, element: any }) {
   const { keys, onTableHeadClick } = useTable()
 
   const { id } = element
 
   const onDelete = async () => {
-    alert('현재 노션은 삭제 API를 제공하지 않습니다.')
+    alert('현재 노션은 삭제 API를 제공하지 않습니다. 노션 페이지에서 삭제해주세요.')
   }
 
   return (
@@ -21,7 +22,6 @@ export default function Row({ element }: { element: any }) {
           if (key === '기타') {
             return (
               <Extension
-                key={keyWithId}
                 menu={[
                   {
                     child: '삭제',
@@ -40,7 +40,7 @@ export default function Row({ element }: { element: any }) {
             return <div>{name}</div>
           }
           if (key === '배정') {
-            if (!value) {
+            if (value.length === 0) {
               return null
             }
             return (
@@ -120,10 +120,7 @@ export default function Row({ element }: { element: any }) {
         const interactiveKeys = ['경로', '아이디', '컴포넌트']
         if (interactiveKeys.includes(key)) {
           return (
-            <td
-              key={keyWithId}
-              className={styles.cell}
-            >
+            <Cell key={keyWithId} index={index} category={key}>
               <button
                 className={styles.cellButton}
                 type="button"
@@ -131,18 +128,100 @@ export default function Row({ element }: { element: any }) {
               >
                 {getValue() || '-'}
               </button>
-            </td>
+            </Cell>
           )
         }
         return (
-          <td
-            key={keyWithId}
-            className={styles.cell}
-          >
+          <Cell key={keyWithId} index={index} category={key}>
             {getValue() || '-'}
-          </td>
+          </Cell>
         )
       })}
     </tr>
+  )
+}
+
+function Cell({
+  index,
+  category: key,
+  children,
+} : {
+  index: number,
+  category: string,
+  children: React.ReactNode
+}) {
+  const { table } = useTable()
+
+  const getValueByKey = (key: string, element: any) => {
+    if (!element) {
+      return null
+    }
+    switch (key) {
+      case '상태':
+        return element.value.name
+      case '최종편집일시':
+        return null
+      case '배정':
+        return element.value[0]?.name
+      case '기능':
+        return null
+      default:
+        if (Array.isArray(element.value)) {
+          if (element.value.length > 0) {
+            return element.value[0]
+          }
+          return null
+        }
+        return element.value
+    }
+  }
+
+  const isSameWithPrevious = () => {
+    if (index === 0) {
+      return false
+    }
+    const currentValue = table[index][key]
+    const curr = getValueByKey(key, currentValue)
+    if (!curr) {
+      return false
+    }
+    const previousValue = table[index - 1][key]
+    const prev = getValueByKey(key, previousValue)
+    if (prev === curr) {
+      return true
+    }
+    return false
+  }
+
+  if (isSameWithPrevious()) {
+    return <></>
+  }
+
+  const extend = (i: number, acc: number) => {
+    if (i < table.length - 1) {
+      const currentValue = table[i][key]
+      const nextValue = table[i + 1][key]
+      const curr = getValueByKey(key, currentValue)
+      const next = getValueByKey(key, nextValue)
+      if (!curr || !next) {
+        return acc
+      }
+      if (curr === next) {
+        return extend(i + 1, acc + 1)
+      }
+      return acc
+    }
+    return acc
+  }
+
+  const rowspan = extend(index, 1)
+
+  return (
+    <td
+      rowSpan={rowspan}
+      className={styles.cell}
+    >
+      {children}
+    </td>
   )
 }

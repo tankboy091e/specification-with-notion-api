@@ -11,6 +11,7 @@ import InputRow from './inputRow'
 import Row from './row'
 
 interface TableContextProps {
+  table: any[],
   state: State,
   defaultInputData: { [key: string]: string }
   keys: string[]
@@ -37,23 +38,21 @@ export default function Table() {
 
   const keys = ['상태', '문서', '경로', '아이디', '컴포넌트', '기능', '비고', '배정', '최종편집일시', '기타']
 
-  useEffect(() => {
-    if (defaultInputData) {
-      setDefaultInputData(null)
-    }
-  }, [defaultInputData])
+  const colRatioData = {
+    기능: 5,
+    비고: 2.5,
+    컴포넌트: 2.5,
+    최종편집일시: 2,
+    경로: 2,
+    아이디: 2,
+    배정: 1.5,
+  }
 
-  useEffect(() => {
-    arrangeDataRef.current = arrangeData
-  }, [arrangeData])
+  const colRatio : number[] = keys.map((key: string) => colRatioData[key] || 1)
 
-  useEffect(() => {
-    const defaultArrangeData = {}
-    keys.forEach((value) => {
-      defaultArrangeData[value] = 1
-    })
-    setArrangeData(defaultArrangeData)
-  }, [])
+  const colTotal = colRatio.reduce((acc, cur) => (
+    acc + cur
+  ), 0)
 
   const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -192,49 +191,32 @@ export default function Table() {
     })
   }
 
-  const colRatio : number[] = keys.map((key: string) => {
-    switch (key) {
-      case '기능':
-        return 5
-      case '비고':
-        return 2.5
-      case '컴포넌트':
-        return 2.5
-      case '최종편집일시':
-        return 2
-      case '경로':
-        return 2
-      case '아이디':
-        return 2
-      case '배정':
-        return 1.5
-      default:
-        return 1
+  useEffect(() => {
+    if (defaultInputData) {
+      setDefaultInputData(null)
     }
-  })
+  }, [defaultInputData])
 
-  const colTotal = colRatio.reduce((acc, cur) => (
-    acc + cur
-  ), 0)
+  useEffect(() => {
+    arrangeDataRef.current = arrangeData
+  }, [arrangeData])
+
+  useEffect(() => {
+    const defaultArrangeData = {}
+    keys.forEach((value) => {
+      defaultArrangeData[value] = 1
+    })
+    setArrangeData(defaultArrangeData)
+  }, [])
 
   const value = {
+    table: data?.table,
     state,
     defaultInputData,
     keys,
     cancle,
     onTableHeadClick,
   }
-
-  if (!data) {
-    return (
-      <section className={styles.container}>
-        <Loading />
-      </section>
-    )
-  }
-
-  const { table } = data
-  const { key, way } = currentArrange
 
   return (
     <section className={styles.container}>
@@ -275,10 +257,22 @@ export default function Table() {
                 })}
               </tr>
               {
-                table.sort((a : any, b: any) => sort(key, way, a, b)).map((element: any) => (
-                  <Row key={element.id} element={element} />
-                ))
+                data && data.table
+                  .sort((a : any, b: any) => {
+                    const { key, way } = currentArrange
+                    return sort(key, way, a, b)
+                  })
+                  .map((value: any, index: number) => (
+                    <Row key={value.id} index={index} element={value} />
+                  ))
               }
+              {!data && (
+                <tr>
+                  <td className={styles.loadingContainer} colSpan={colRatio.length}>
+                    <Loading />
+                  </td>
+                </tr>
+              )}
               {
                 inputs.map((key) => (
                   <InputRow key={key} index={key} data={defaultInputData} />

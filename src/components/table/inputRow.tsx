@@ -68,9 +68,15 @@ export default function InputRow({ index, data }: { index: number, data?: Data }
           return '-'
         }
         return (
-          <td key={`${key}input}`} className={styles.inputCell}>
-            {state === 'pending' && <Loading size={28} />}
-            {getValue()}
+          <td
+            key={`${key}input}`}
+            colSpan={state === 'pending' ? keys.length : 1}
+            className={cn(styles.inputCell, (key !== '상태' && state === 'pending') && styles.pending)}
+          >
+            {state === 'pending' && <Loading size={32} />}
+            <div className={cn(styles.inputWrapper, state === 'pending' && styles.pending)}>
+              {getValue()}
+            </div>
           </td>
         )
       })}

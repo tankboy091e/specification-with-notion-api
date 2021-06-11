@@ -16,18 +16,17 @@
     background-color: colors.$background;
 }
 
+.loadingContainer {
+    padding: 2rem 0;
+}
+
 .row { 
     th {
         border-bottom: 2px solid colors.$accent;
     }
-    th + th {
-        .button {
-            border-left: 1px solid colors.$primary-200;
-        }
-    }
     td {
         color: colors.$primary-600;
-        border-bottom: 1px solid colors.$primary-200;
+        border: 1px dotted colors.$primary-100;
     }
 }
 
@@ -70,6 +69,10 @@
     &:hover {
         background-color: colors.$background-shade;
     }
+}
+
+.pending {
+    display: none;
 }
 
 .input {
