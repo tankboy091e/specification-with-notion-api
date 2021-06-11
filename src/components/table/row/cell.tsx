@@ -1,40 +1,45 @@
 import React from 'react'
 import styles from 'sass/components/table.module.scss'
+import HEAD_LIST from 'lib/util/const'
 import { useTable } from '..'
+
+const {
+  STATE, COMPONENT, FUNCTION, EDIT_TIME, ASSIGN, REMARK,
+} = HEAD_LIST
 
 export default function Cell({
   index,
-  category: key,
+  head,
   children,
 }: {
   index: number
-  category: string
+  head: string
   children: React.ReactNode
 }) {
   const { table, currentArrange } = useTable()
 
-  const getValueByKey = (key: string, element: any) => {
+  const getValue = (head: string, value: any) => {
     try {
-      if (!element) {
+      if (!value) {
         return null
       }
-      switch (key) {
-        case '상태':
-          return element.name
-        case '최종편집일시':
+      switch (head) {
+        case STATE:
+          return value.name
+        case EDIT_TIME:
           return null
-        case '배정':
-          return element[0]?.name
-        case '기능':
+        case ASSIGN:
+          return value[0]?.name
+        case FUNCTION:
           return null
         default:
-          if (Array.isArray(element)) {
-            if (element.length > 0) {
-              return element[0]
+          if (Array.isArray(value)) {
+            if (value.length > 0) {
+              return value[0]
             }
             return null
           }
-          return element
+          return value
       }
     } catch (error) {
       console.log(error)
@@ -46,13 +51,13 @@ export default function Cell({
     if (index === 0) {
       return false
     }
-    const currentValue = table[index][key]
-    const curr = getValueByKey(key, currentValue)
+    const currentValue = table[index][head]
+    const curr = getValue(head, currentValue)
     if (!curr) {
       return false
     }
-    const previousValue = table[index - 1][key]
-    const prev = getValueByKey(key, previousValue)
+    const previousValue = table[index - 1][head]
+    const prev = getValue(head, previousValue)
     if (prev === curr) {
       return true
     }
@@ -63,53 +68,51 @@ export default function Cell({
     return <></>
   }
 
-  const extend = (i: number, acc: number) => {
+  const extendSpan = (i: number, acc: number) => {
     if (i < table.length - 1) {
-      const currentValue = table[i][key]
-      const nextValue = table[i + 1][key]
-      const curr = getValueByKey(key, currentValue)
-      const next = getValueByKey(key, nextValue)
+      const currentValue = table[i][head]
+      const nextValue = table[i + 1][head]
+      const curr = getValue(head, currentValue)
+      const next = getValue(head, nextValue)
       if (!curr || !next) {
         return acc
       }
       if (curr === next) {
-        return extend(i + 1, acc + 1)
+        return extendSpan(i + 1, acc + 1)
       }
       return acc
     }
     return acc
   }
 
-  const rowspan = extend(index, 1)
-
   const getBackgroundColor = () => {
-    if (currentArrange.key !== '상태') {
+    if (currentArrange.head !== STATE) {
       return null
     }
-    const functional = ['기능', '비고']
-    if (functional.includes(key)) {
-      if (table[index]['기능'].checked) {
+    const functional = [FUNCTION, REMARK]
+    if (functional.includes(head)) {
+      if (table[index][FUNCTION].checked) {
         return 'green'
       }
       return 'red'
     }
-    if (key === '컴포넌트') {
+    if (head === COMPONENT) {
       const dependents = table
-        .filter((row) => getValueByKey('컴포넌트', row) === getValueByKey('컴포넌트', table[index]))
-      if (dependents.some((row) => row['기능'].checked === false)) {
+        .filter((row) => getValue(COMPONENT, row) === getValue(COMPONENT, table[index]))
+      if (dependents.some((row) => row[FUNCTION].checked === false)) {
         return 'red'
       }
       return 'green'
     }
-    return table[index]['상태'].color
+    return table[index][STATE].color
   }
 
-  const backgroundColor = getBackgroundColor()
-
   return (
-    <td rowSpan={rowspan} className={styles.cell}>
-      <div className={styles.backgroundCell} style={{ backgroundColor }} />
-      <div className={styles.cellWrapper}>{children}</div>
+    <td rowSpan={extendSpan(index, 1)} className={styles.cell}>
+      <div className={styles.backgroundCell} style={{ backgroundColor: getBackgroundColor() }} />
+      <div className={styles.cellWrapper}>
+        {children}
+      </div>
     </td>
   )
 }
