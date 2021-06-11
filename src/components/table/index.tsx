@@ -10,13 +10,19 @@ import Loading from 'widgets/loading'
 import InputRow from './inputRow'
 import Row from './row'
 
+interface Arrange {
+  key: string
+  way: number
+}
+
 interface TableContextProps {
-  table: any[],
-  state: State,
+  table: any[]
+  state: State
+  currentArrange: Arrange
   defaultInputData: { [key: string]: string }
   keys: string[]
   cancle: (index: number) => void
-  onTableHeadClick: (key:string, content: string) => void
+  onCellClick: (key:string, content: string) => void
 }
 
 const TableContext = createContext<TableContextProps>(null)
@@ -31,12 +37,12 @@ export default function Table() {
   const [state, setState] = useState<State>('default')
   const [inputs, setInputs] = useState<number[]>([])
   const [defaultInputData, setDefaultInputData] = useState<{ [key: string]: string }>(null)
-  const [currentArrange, setCurrentArrage] = useState<{key: string, way: number}>({ key: '상태', way: -1 })
+  const [currentArrange, setCurrentArrage] = useState<Arrange>({ key: '상태', way: -1 })
   const [arrangeData, setArrangeData] = useState<{ [key: string]: number }>({})
 
   const arrangeDataRef = useRef(arrangeData)
 
-  const keys = ['상태', '문서', '경로', '아이디', '컴포넌트', '기능', '비고', '배정', '최종편집일시', '기타']
+  const keys = ['상태', '경로', '아이디', '컴포넌트', '기능', '비고', '배정', '최종편집일시', '기타']
 
   const colRatioData = {
     기능: 5,
@@ -109,47 +115,49 @@ export default function Table() {
 
   const sort = (key: string, way: number, a: any, b: any) => {
     const getValue = () => {
-      const va = a[key].value
-      const vb = b[key].value
-      const getAssignValue = (value : any) => {
-        if (value.length > 0) {
-          return value[0].name
+      try {
+        const va = a[key]
+        const vb = b[key]
+        const getAssignValue = (value : any) => {
+          if (value.length > 0) {
+            return value[0].name
+          }
+          return ''
         }
-        return ''
-      }
-      const convertIfArray = (value: any) => {
-        if (Array.isArray(value)) {
-          return value[0]
+        const convertIfArray = (value: any) => {
+          if (Array.isArray(value)) {
+            return value[0]
+          }
+          return value
         }
-        return value
-      }
-
-      switch (key) {
-        case '상태':
-          return {
-            va: va.id,
-            vb: vb.id,
-          }
-        case '문서':
-          return {
-            va: va[0],
-            vb: vb[0],
-          }
-        case '기능':
-          return {
-            va: a[key].value.content,
-            vb: b[key].value.content,
-          }
-        case '배정':
-          return {
-            va: getAssignValue(va),
-            vb: getAssignValue(vb),
-          }
-        default:
-          return {
-            va: convertIfArray(va),
-            vb: convertIfArray(vb),
-          }
+        switch (key) {
+          case '상태':
+            return {
+              va: va.id,
+              vb: vb.id,
+            }
+          case '기능':
+            return {
+              va: a[key].content,
+              vb: b[key].content,
+            }
+          case '배정':
+            return {
+              va: getAssignValue(va),
+              vb: getAssignValue(vb),
+            }
+          default:
+            return {
+              va: convertIfArray(va),
+              vb: convertIfArray(vb),
+            }
+        }
+      } catch (error) {
+        console.log(error)
+        return {
+          va: null,
+          vb: null,
+        }
       }
     }
     const { va, vb } = getValue()
@@ -182,7 +190,7 @@ export default function Table() {
     setInputs(inputs.filter((value) => value !== index))
   }
 
-  const onTableHeadClick = (key: string, content: string) => {
+  const onCellClick = (key: string, content: string) => {
     const newData = {}
     newData[key] = content
     setDefaultInputData({
@@ -202,6 +210,12 @@ export default function Table() {
   }, [arrangeData])
 
   useEffect(() => {
+    if (inputs.length > 0) {
+      window.scrollTo({ behavior: 'smooth', top: document.body.scrollHeight })
+    }
+  }, [inputs])
+
+  useEffect(() => {
     const defaultArrangeData = {}
     keys.forEach((value) => {
       defaultArrangeData[value] = 1
@@ -212,10 +226,11 @@ export default function Table() {
   const value = {
     table: data?.table,
     state,
+    currentArrange,
     defaultInputData,
     keys,
     cancle,
-    onTableHeadClick,
+    onCellClick,
   }
 
   return (

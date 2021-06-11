@@ -23,6 +23,11 @@ html {
   }
 }
 
+::selection {
+  color: colors.$background;
+  background-color: colors.$accent;
+}
+
 body {
   position: relative;
   line-height: 1;
@@ -40,11 +45,13 @@ h1 {
 }
 
 a {
+  color: inherit;
   text-decoration: none;
   &:visited {
     color: inherit;
   }
 }
+
 img {
   max-width: 100%;
   display: block;

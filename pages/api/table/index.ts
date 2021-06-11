@@ -38,10 +38,10 @@ async function getDatabaseTable() {
       id,
     }
     for await (const key of keys) {
+      const pid = row['문서'] && row['문서'][0]
       if (key === '상태') {
-        const pid = row['문서'].value[0]
         if (i > 0) {
-          const previousId = result[i - 1]['문서'].value[0]
+          const previousId = result[i - 1]['문서'][0]
           if (previousId === pid) {
             row[key] = result[i - 1]['상태']
             continue
@@ -49,21 +49,14 @@ async function getDatabaseTable() {
         }
         try {
           const response = await retreive(pid)
-          row[key] = {
-            type: 'multi_select',
-            value: response.properties['상태']['select'],
-          }
+          row[key] = response.properties['상태']['select']
         } catch {
-          row[key] = {
-            type: 'multi_select',
-            value: null,
-          }
+          row[key] = null
         }
         continue
       }
       if (key === '기능') {
         try {
-          const pid = row['문서'].value[0]
           const response = await retreiveBlock(pid)
           const { content } = value.properties['기능']['rich_text'][0].text
           // eslint-disable-next-line no-loop-func
@@ -71,25 +64,18 @@ async function getDatabaseTable() {
             .find((result) => content === result[result.type].text[0].text.content)
           const { checked } = block['to_do']
           row[key] = {
-            type: 'none',
-            value: {
-              content,
-              checked,
-            },
+            content,
+            checked,
           }
         } catch {
-          row[key] = {
-            type: 'none',
-            value: null,
-          }
+          row[key] = null
         }
         continue
       }
       if (key === '배정') {
         try {
-          const pid = row['문서'].value[0]
           if (i > 0) {
-            const previousId = result[i - 1]['문서'].value[0]
+            const previousId = result[i - 1]['문서'][0]
             if (previousId === pid) {
               row[key] = result[i - 1]['배정']
               continue
@@ -98,28 +84,19 @@ async function getDatabaseTable() {
           const response = await retreive(pid)
           const content = response.properties['배정']['people']
           // eslint-disable-next-line camelcase
-          row[key] = {
-            type: 'none',
-            value: content,
-          }
+          row[key] = content
         } catch {
-          row[key] = {
-            type: 'none',
-            value: null,
-          }
+          row[key] = null
         }
         continue
       }
       const property = value.properties[key]
       if (!property) {
-        row[key] = {
-          type: null,
-          value: null,
-        }
+        row[key] = null
         continue
       }
       const { type } = property
-      const content = value.properties[key][type]
+      const content = property[type]
       if (
         type === 'checkbox'
         || type === 'number'
@@ -127,29 +104,23 @@ async function getDatabaseTable() {
         || type === 'created_time'
         || type === 'last_edited_time'
       ) {
-        row[key] = {
-          type,
-          value: content,
-        }
+        row[key] = content
         continue
       }
-      row[key] = {
-        type,
-        value: content.map((child: any) => {
-          const { type: contentType } = child
-          if (!contentType) {
+      row[key] = content.map((child: any) => {
+        const { type: contentType } = child
+        if (!contentType) {
+          return child.name
+        }
+        switch (contentType) {
+          case 'text':
+            return child.text.content
+          case 'person':
             return child.name
-          }
-          switch (contentType) {
-            case 'text':
-              return child.text.content
-            case 'person':
-              return child.name
-            default:
-              return null
-          }
-        }),
-      }
+          default:
+            return null
+        }
+      })
     }
     result.push(row)
   }
