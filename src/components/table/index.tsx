@@ -40,7 +40,7 @@ export const useTable = () => useContext(TableContext)
 export type State = 'default' | 'pending'
 
 export default function Table() {
-  const { data, mutate } = useSWR('/api/table', fetcher)
+  const { data: table, mutate } = useSWR('/api/table', fetcher)
 
   const [state, setState] = useState<State>('default')
   const [inputs, setInputs] = useState<number[]>([])
@@ -108,7 +108,7 @@ export default function Table() {
   }, [])
 
   const value = {
-    table: data?.table,
+    table,
     state,
     setState,
     currentArrange,

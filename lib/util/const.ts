@@ -9,6 +9,10 @@ const HEAD_LIST = {
   ASSIGN: '배정',
   EDIT_TIME: '최종편집일시',
   ETC: '기타',
+  BLOCK: '블록',
 }
 
+const TITLE = '이름'
+
 export default HEAD_LIST
+export { TITLE }

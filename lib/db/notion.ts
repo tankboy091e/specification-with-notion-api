@@ -1,6 +1,7 @@
 /* eslint-disable dot-notation */
 /* eslint-disable no-shadow */
 import { Client } from '@notionhq/client'
+import HEAD_LIST, { TITLE } from 'lib/util/const'
 
 const notion = new Client({
   auth: process.env.NOTION_KEY,
@@ -11,9 +12,13 @@ export default notion
 export const databaseId = process.env.NOTION_DATABASE_ID
 export const todoId = process.env.NOTION_TODO_ID
 
-export const databaseProperties = ['문서', '경로', '아이디', '컴포넌트', '기능', '비고', '최종편집일시']
+const {
+  DOC, STATE, ROUTE, ID, COMPONENT, FUNCTION, REMARK, ASSIGN, EDIT_TIME, BLOCK,
+} = HEAD_LIST
 
-export const todoProperties = ['상태', '배정']
+export const databaseProperties = [DOC, ROUTE, ID, COMPONENT, FUNCTION, REMARK, EDIT_TIME, BLOCK]
+
+export const todoProperties = [STATE, ASSIGN]
 
 async function getDatabases(id: string) {
   const response = await notion.databases.retrieve({
@@ -41,7 +46,7 @@ async function getQuery(id: string, sorts?: any) {
 export async function getDatabaseQuery() {
   return getQuery(databaseId, [
     {
-      property: '문서',
+      property: DOC,
       direction: 'ascending',
     },
   ])
@@ -100,7 +105,11 @@ export async function createInDatabase(data: any) {
         }
         return null
       }
-      properties[property] = getValue()
+      const value = getValue()
+      if (!value) {
+        continue
+      }
+      properties[property] = value
     }
   }
 
@@ -124,19 +133,22 @@ export async function createInTodo(data: any) {
   const children = []
 
   const todoQueryResponse = await getTodoQuery()
-  const existingTodo = todoQueryResponse.results.find((value) => value.properties['이름'][value.properties['이름'].type].find((value : any) => value.text.content === data['아이디']))
+
+  const existingTodo = todoQueryResponse.results
+    .find((value) => value.properties[TITLE][value.properties[TITLE].type]
+      .find((value : any) => value.text.content === data[ID]))
 
   if (!existingTodo) {
-    properties['이름'] = {
+    properties[TITLE] = {
       title: [
         {
           text: {
-            content: data['아이디'],
+            content: data[ID],
           },
         },
       ],
     }
-    properties['상태'] = {
+    properties[STATE] = {
       select: {
         name: '시작 전',
       },
@@ -149,7 +161,7 @@ export async function createInTodo(data: any) {
           {
             type: 'text',
             text: {
-              content: data['컴포넌트'],
+              content: data[COMPONENT],
             },
           },
         ],
@@ -160,7 +172,8 @@ export async function createInTodo(data: any) {
     result.pageId = existingTodo.id
     const todoBlocks = await retreiveBlock(result.pageId)
 
-    const existingHeading = todoBlocks.results.find((value) => value['heading_2']?.text[0].text.content === data['컴포넌트'])
+    const existingHeading = todoBlocks.results
+      .find((value) => value['heading_2']?.text[0].text.content === data[COMPONENT])
 
     if (!existingHeading) {
       const headingBlock = {
@@ -171,7 +184,7 @@ export async function createInTodo(data: any) {
             {
               type: 'text',
               text: {
-                content: data['컴포넌트'],
+                content: data[COMPONENT],
               },
             },
           ],
@@ -189,7 +202,7 @@ export async function createInTodo(data: any) {
         {
           type: 'text',
           text: {
-            content: data['기능'],
+            content: data[FUNCTION],
           },
         },
       ],

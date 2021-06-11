@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 /* eslint-disable dot-notation */
 import getHandler from 'lib/api/handler'
 import {
@@ -10,7 +11,12 @@ import {
   retreiveBlock,
 } from 'lib/db/notion'
 import validateAuth from 'lib/middleware/validate-auth'
+import HEAD_LIST from 'lib/util/const'
 import { NextApiRequest, NextApiResponse } from 'next'
+
+const {
+  DOC, STATE, FUNCTION, ASSIGN, BLOCK,
+} = HEAD_LIST
 
 const handler = getHandler()
 
@@ -18,50 +24,79 @@ handler.use(validateAuth)
 
 handler.get(async (_: NextApiRequest, res: NextApiResponse) => {
   try {
-    const keys = [...databaseProperties, ...todoProperties]
-    const table = await getDatabaseTable()
-    res.status(200).json({ keys, table })
+    const data = await getDatabaseTable()
+    res.status(200).json(data)
   } catch (error) {
     res.status(500).json({ error })
   }
 })
 
+async function getQueries() {
+  const timestart = new Date().getTime()
+  console.log('fetch database ...')
+  const databaseQuery = await getDatabaseQuery()
+  console.log(`got database. ${new Date().getTime() - timestart}ms`)
+
+  const todoQuery = databaseQuery.results.reduce((acc, cur) => {
+    const newQuery = {}
+    newQuery[cur.properties[DOC]['rich_text'][0].text.content] = null
+    return {
+      ...acc,
+      ...newQuery,
+    }
+  }, [])
+
+  for await (const id of Object.keys(todoQuery)) {
+    const timestart = new Date().getTime()
+    console.log(`fetch doc#${id} ...`)
+    const header = await retreive(id)
+    console.log(`got header. ${new Date().getTime() - timestart}ms`)
+    const timestart2 = new Date().getTime()
+    const block = await retreiveBlock(id)
+    console.log(`got blocks. ${new Date().getTime() - timestart2}ms`)
+    todoQuery[id] = {
+      header,
+      block,
+    }
+  }
+
+  console.log(`got everything. ${new Date().getTime() - timestart}ms`)
+
+  return {
+    databaseQuery,
+    todoQuery,
+  }
+}
+
 async function getDatabaseTable() {
   const keys = [...databaseProperties, ...todoProperties]
-  const query = await getDatabaseQuery()
+
+  const { databaseQuery, todoQuery } = await getQueries()
+
   const result = []
-  for (let i = 0; i < query.results.length; i++) {
-    // eslint-disable-next-line no-plusplus
-    const value = query.results[i]
+  for (const value of databaseQuery.results) {
     const { id } = value
     const row = {
       id,
     }
-    for await (const key of keys) {
-      const pid = row['문서'] && row['문서'][0]
-      if (key === '상태') {
-        if (i > 0) {
-          const previousId = result[i - 1]['문서'][0]
-          if (previousId === pid) {
-            row[key] = result[i - 1]['상태']
-            continue
-          }
-        }
+    for (const key of keys) {
+      const pid = row[DOC] && row[DOC][0]
+      if (key === STATE) {
         try {
-          const response = await retreive(pid)
-          row[key] = response.properties['상태']['select']
+          const response = todoQuery[pid].header
+          row[key] = response.properties[STATE]['select']
         } catch {
           row[key] = null
         }
         continue
       }
-      if (key === '기능') {
+      if (key === FUNCTION) {
         try {
-          const response = await retreiveBlock(pid)
-          const { content } = value.properties['기능']['rich_text'][0].text
+          const response = todoQuery[pid].block
+          const { content } = value.properties[FUNCTION]['rich_text'][0].text
           // eslint-disable-next-line no-loop-func
           const block = response.results
-            .find((result) => content === result[result.type].text[0].text.content)
+            .find((result: any) => content === result[result.type].text[0].text.content)
           const { checked } = block['to_do']
           row[key] = {
             content,
@@ -72,17 +107,10 @@ async function getDatabaseTable() {
         }
         continue
       }
-      if (key === '배정') {
+      if (key === ASSIGN) {
         try {
-          if (i > 0) {
-            const previousId = result[i - 1]['문서'][0]
-            if (previousId === pid) {
-              row[key] = result[i - 1]['배정']
-              continue
-            }
-          }
-          const response = await retreive(pid)
-          const content = response.properties['배정']['people']
+          const response = todoQuery[pid].header
+          const content = response.properties[ASSIGN]['people']
           // eslint-disable-next-line camelcase
           row[key] = content
         } catch {
@@ -134,8 +162,8 @@ handler.post(async (req: NextApiRequest, res: NextApiResponse) => {
     for await (const row of rows) {
       const { id, ...data } = row
       const { pageId, blockId } = await createInTodo(data)
-      data['문서'] = pageId
-      data['블록'] = blockId
+      data[DOC] = pageId
+      data[BLOCK] = blockId
       await createInDatabase(data)
     }
     res.status(201).json({ message: 'resource posted successfully' })
