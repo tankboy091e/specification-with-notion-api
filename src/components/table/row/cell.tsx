@@ -4,7 +4,7 @@ import HEAD_LIST from 'lib/util/const'
 import { useTable } from '..'
 
 const {
-  STATE, COMPONENT, FUNCTION, EDIT_TIME, ASSIGN, REMARK,
+  STATE, COMPONENT, FUNCTION, EDIT_TIME, ASSIGN, REMARK, ETC,
 } = HEAD_LIST
 
 export default function Cell({
@@ -18,8 +18,12 @@ export default function Cell({
 }) {
   const { table, currentArrange } = useTable()
 
-  const getValue = (head: string, value: any) => {
+  const getValue = (head: string, row: any) => {
     try {
+      if (!row) {
+        return null
+      }
+      const value = row[head]
       if (!value) {
         return null
       }
@@ -47,33 +51,61 @@ export default function Cell({
     }
   }
 
+  const getBackgroundColor = (head: string, index: number) => {
+    if (currentArrange.head !== STATE) {
+      return null
+    }
+    const dependedHead = [REMARK, ASSIGN, EDIT_TIME, ETC]
+    if (dependedHead.includes(head)) {
+      return getBackgroundColor(FUNCTION, index)
+    }
+    const functional = [FUNCTION, REMARK]
+    if (functional.includes(head)) {
+      if (table[index][FUNCTION].checked) {
+        return 'green'
+      }
+      return table[index][STATE]?.color
+    }
+    if (head === COMPONENT) {
+      const dependents = table
+        .filter((row) => getValue(COMPONENT, row) === getValue(COMPONENT, table[index]))
+      if (dependents.some((row) => row[FUNCTION].checked === false)) {
+        return table[index][STATE]?.color
+      }
+      return 'green'
+    }
+    return table[index][STATE]?.color
+  }
+
   const isSameWithPrevious = () => {
     if (index === 0) {
       return false
     }
-    const currentValue = table[index][head]
-    const curr = getValue(head, currentValue)
+    const currBackgroundColor = getBackgroundColor(head, index)
+    const prevBackgroundColor = getBackgroundColor(head, index - 1)
+    if (currBackgroundColor !== prevBackgroundColor) {
+      return false
+    }
+    const curr = getValue(head, table[index])
     if (!curr) {
       return false
     }
-    const previousValue = table[index - 1][head]
-    const prev = getValue(head, previousValue)
+    const prev = getValue(head, table[index - 1])
     if (prev === curr) {
       return true
     }
     return false
   }
 
-  if (isSameWithPrevious()) {
-    return <></>
-  }
-
   const extendSpan = (i: number, acc: number) => {
     if (i < table.length - 1) {
-      const currentValue = table[i][head]
-      const nextValue = table[i + 1][head]
-      const curr = getValue(head, currentValue)
-      const next = getValue(head, nextValue)
+      const currBackgroundColor = getBackgroundColor(head, i)
+      const nextBackgroundColor = getBackgroundColor(head, i + 1)
+      if (currBackgroundColor !== nextBackgroundColor) {
+        return acc
+      }
+      const curr = getValue(head, table[i])
+      const next = getValue(head, table[i + 1])
       if (!curr || !next) {
         return acc
       }
@@ -85,31 +117,19 @@ export default function Cell({
     return acc
   }
 
-  const getBackgroundColor = () => {
-    if (currentArrange.head !== STATE) {
-      return null
-    }
-    const functional = [FUNCTION, REMARK]
-    if (functional.includes(head)) {
-      if (table[index][FUNCTION].checked) {
-        return 'green'
-      }
-      return 'red'
-    }
-    if (head === COMPONENT) {
-      const dependents = table
-        .filter((row) => getValue(COMPONENT, row) === getValue(COMPONENT, table[index]))
-      if (dependents.some((row) => row[FUNCTION].checked === false)) {
-        return 'red'
-      }
-      return 'green'
-    }
-    return table[index][STATE].color
+  if (isSameWithPrevious()) {
+    return <></>
   }
 
   return (
-    <td rowSpan={extendSpan(index, 1)} className={styles.cell}>
-      <div className={styles.backgroundCell} style={{ backgroundColor: getBackgroundColor() }} />
+    <td
+      rowSpan={extendSpan(index, 1)}
+      className={styles.cell}
+    >
+      <div
+        className={styles.backgroundCell}
+        style={{ backgroundColor: getBackgroundColor(head, index) }}
+      />
       <div className={styles.cellWrapper}>
         {children}
       </div>

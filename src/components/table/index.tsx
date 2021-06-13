@@ -45,7 +45,7 @@ export default function Table() {
   const [state, setState] = useState<State>('default')
   const [inputs, setInputs] = useState<number[]>([])
   const [defaultInputData, setDefaultInputData] = useState<{ [key: string]: string }>(null)
-  const [currentArrange, setCurrentArrage] = useState<Arrange>({ head: STATE, way: -1 })
+  const [currentArrange, setCurrentArrage] = useState<Arrange>({ head: ID, way: 1 })
   const [arrangeData, setArrangeData] = useState<{ [key: string]: number }>({})
 
   const arrangeDataRef = useRef(arrangeData)
@@ -63,7 +63,7 @@ export default function Table() {
       }
       return {
         head,
-        way: -1,
+        way: 1,
       }
     })
   }

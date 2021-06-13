@@ -41,7 +41,7 @@ export default function RowInner({
   }
 
   const onEdit = async () => {
-    setState('edit')
+    alert('현재 노션은 수정 API를 제공하지 않습니다. 노션 페이지에서 수정해주세요.')
   }
 
   const getEtc = () => (

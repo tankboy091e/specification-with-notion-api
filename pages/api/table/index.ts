@@ -47,16 +47,30 @@ async function getQueries() {
   }, [])
 
   for await (const id of Object.keys(todoQuery)) {
-    const timestart = new Date().getTime()
-    console.log(`fetch doc#${id} ...`)
-    const header = await retreive(id)
-    console.log(`got header. ${new Date().getTime() - timestart}ms`)
-    const timestart2 = new Date().getTime()
-    const block = await retreiveBlock(id)
-    console.log(`got blocks. ${new Date().getTime() - timestart2}ms`)
-    todoQuery[id] = {
-      header,
-      block,
+    try {
+      const timestart = new Date().getTime()
+      console.log(`fetch doc#${id} ...`)
+      const header = await retreive(id)
+      console.log(`got header. ${new Date().getTime() - timestart}ms`)
+      try {
+        const timestart2 = new Date().getTime()
+        const block = await retreiveBlock(id)
+        console.log(`got blocks. ${new Date().getTime() - timestart2}ms`)
+        todoQuery[id] = {
+          header,
+          block,
+        }
+      } catch (error) {
+        todoQuery[id] = {
+          header,
+          block: null,
+        }
+      }
+    } catch (error) {
+      todoQuery[id] = {
+        header: null,
+        block: null,
+      }
     }
   }
 
@@ -96,14 +110,17 @@ async function getDatabaseTable() {
           const { content } = value.properties[FUNCTION]['rich_text'][0].text
           // eslint-disable-next-line no-loop-func
           const block = response.results
-            .find((result: any) => content === result[result.type].text[0].text.content)
+            .find((result: any) => content === result[result.type].text[0]?.text?.content)
           const { checked } = block['to_do']
           row[key] = {
             content,
             checked,
           }
         } catch {
-          row[key] = null
+          row[key] = {
+            content: null,
+            checked: false,
+          }
         }
         continue
       }

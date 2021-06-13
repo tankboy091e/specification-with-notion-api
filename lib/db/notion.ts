@@ -136,7 +136,7 @@ export async function createInTodo(data: any) {
 
   const existingTodo = todoQueryResponse.results
     .find((value) => value.properties[TITLE][value.properties[TITLE].type]
-      .find((value : any) => value.text.content === data[ID]))
+      .find((value : any) => value?.text?.content === data[ID]))
 
   if (!existingTodo) {
     properties[TITLE] = {
@@ -173,7 +173,7 @@ export async function createInTodo(data: any) {
     const todoBlocks = await retreiveBlock(result.pageId)
 
     const existingHeading = todoBlocks.results
-      .find((value) => value['heading_2']?.text[0].text.content === data[COMPONENT])
+      .find((value) => value['heading_2']?.text[0]?.text?.content === data[COMPONENT])
 
     if (!existingHeading) {
       const headingBlock = {

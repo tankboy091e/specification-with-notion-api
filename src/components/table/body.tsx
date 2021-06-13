@@ -19,6 +19,12 @@ export default function TableBody() {
       try {
         const va = a[head]
         const vb = b[head]
+        if (!va || !vb) {
+          return {
+            va,
+            vb,
+          }
+        }
         const getAssignValue = (value : any) => {
           if (value.length > 0) {
             return value[0].name
@@ -62,8 +68,8 @@ export default function TableBody() {
       }
     }
     const { va, vb } = getValue()
-    if (va > vb) return -1 * way
-    if (va < vb) return 1 * way
+    if (va > vb) return 1 * way
+    if (va < vb) return -1 * way
     return 0
   }
 
