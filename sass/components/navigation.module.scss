@@ -9,8 +9,12 @@
     border-bottom: 1px solid colors.$primary-300;
 }
 
-.hello {
-    color: colors.$primary-500;
-    margin-left: 1rem;
+.wrapper {
+    display: flex;
+    align-items: flex-end;
 }
 
+.hello {
+    color: colors.$primary-500;
+    margin-left: .5rem;
+}

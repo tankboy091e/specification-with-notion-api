@@ -15,7 +15,7 @@ export default function Login() {
     <section className={styles.container}>
       <form className={styles.form} onSubmit={onSubmit}>
         <fieldset className={styles.inner}>
-          <legend className={styles.legend}>로그인</legend>
+          <legend className={styles.legend}>안녕하세요?</legend>
           <input className={styles.password} type="text" ref={passwordRef} autoComplete="off" placeholder="암호를 대세요" />
           <input className={styles.submit} type="submit" value="로그인" />
         </fieldset>

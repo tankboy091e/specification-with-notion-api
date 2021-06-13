@@ -1,14 +1,15 @@
 import { useAuth } from 'providers/authProvider'
 import Title from 'widgets/title'
 import styles from 'sass/components/navigation.module.scss'
+import { FiLogOut } from 'react-icons/fi'
 
 export default function Navigation() {
   const { user, signout } = useAuth()
 
   return (
     <section className={styles.container}>
-      <Title />
       <div className={styles.wrapper}>
+        <Title />
         <span className={styles.hello}>
           안녕하세요
           <span className={styles.name}>
@@ -16,10 +17,10 @@ export default function Navigation() {
           </span>
           님
         </span>
-        <button type="button" onClick={signout}>
-          로그아웃
-        </button>
       </div>
+      <button className={styles.signout} type="button" onClick={signout}>
+        <FiLogOut size="1.4rem" />
+      </button>
     </section>
   )
 }
