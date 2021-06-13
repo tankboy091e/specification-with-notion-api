@@ -4,7 +4,7 @@ import HEAD_LIST from 'lib/util/const'
 import { useTable } from '..'
 
 const {
-  STATE, COMPONENT, FUNCTION, EDIT_TIME, ASSIGN, REMARK, ETC,
+  STATE, COMPONENT, FUNCTION, EDIT_TIME, ASSIGN, REMARK, ETC, ID,
 } = HEAD_LIST
 
 export default function Cell({
@@ -68,7 +68,10 @@ export default function Cell({
     }
     if (head === COMPONENT) {
       const dependents = table
-        .filter((row) => getValue(COMPONENT, row) === getValue(COMPONENT, table[index]))
+        .filter((row) => (
+          getValue(COMPONENT, row) === getValue(COMPONENT, table[index])
+          && getValue(ID, row) === getValue(ID, table[index])
+        ))
       if (dependents.some((row) => row[FUNCTION].checked === false)) {
         return table[index][STATE]?.color
       }
