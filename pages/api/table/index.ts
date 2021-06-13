@@ -1,14 +1,12 @@
 /* eslint-disable no-console */
 /* eslint-disable dot-notation */
 import getHandler from 'lib/api/handler'
+import Cache from 'lib/db/cache'
 import {
   createInDatabase,
   createInTodo,
-  getDatabaseQuery,
   databaseProperties,
   todoProperties,
-  retreive,
-  retreiveBlock,
 } from 'lib/db/notion'
 import validateAuth from 'lib/middleware/validate-auth'
 import HEAD_LIST from 'lib/util/const'
@@ -31,61 +29,13 @@ handler.get(async (_: NextApiRequest, res: NextApiResponse) => {
   }
 })
 
-async function getQueries() {
-  const timestart = new Date().getTime()
-  console.log('fetch database ...')
-  const databaseQuery = await getDatabaseQuery()
-  console.log(`got database. ${new Date().getTime() - timestart}ms`)
-
-  const todoQuery = databaseQuery.results.reduce((acc, cur) => {
-    const newQuery = {}
-    newQuery[cur.properties[DOC]['rich_text'][0].text.content] = null
-    return {
-      ...acc,
-      ...newQuery,
-    }
-  }, [])
-
-  for await (const id of Object.keys(todoQuery)) {
-    try {
-      const timestart = new Date().getTime()
-      console.log(`fetch doc#${id} ...`)
-      const header = await retreive(id)
-      console.log(`got header. ${new Date().getTime() - timestart}ms`)
-      try {
-        const timestart2 = new Date().getTime()
-        const block = await retreiveBlock(id)
-        console.log(`got blocks. ${new Date().getTime() - timestart2}ms`)
-        todoQuery[id] = {
-          header,
-          block,
-        }
-      } catch (error) {
-        todoQuery[id] = {
-          header,
-          block: null,
-        }
-      }
-    } catch (error) {
-      todoQuery[id] = {
-        header: null,
-        block: null,
-      }
-    }
-  }
-
-  console.log(`got everything. ${new Date().getTime() - timestart}ms`)
-
-  return {
-    databaseQuery,
-    todoQuery,
-  }
-}
-
 async function getDatabaseTable() {
   const keys = [...databaseProperties, ...todoProperties]
 
-  const { databaseQuery, todoQuery } = await getQueries()
+  const cache = new Cache()
+
+  const databaseQuery = await cache.getDatabase()
+  const todoQuery = await cache.getQueries()
 
   const result = []
   for (const value of databaseQuery.results) {
@@ -97,7 +47,7 @@ async function getDatabaseTable() {
       const pid = row[DOC] && row[DOC][0]
       if (key === STATE) {
         try {
-          const response = todoQuery[pid].header
+          const response = todoQuery[pid].head
           row[key] = response.properties[STATE]['select']
         } catch {
           row[key] = null
@@ -126,7 +76,7 @@ async function getDatabaseTable() {
       }
       if (key === ASSIGN) {
         try {
-          const response = todoQuery[pid].header
+          const response = todoQuery[pid].head
           const content = response.properties[ASSIGN]['people']
           // eslint-disable-next-line camelcase
           row[key] = content
@@ -177,7 +127,7 @@ handler.post(async (req: NextApiRequest, res: NextApiResponse) => {
     const rows = req.body
 
     for await (const row of rows) {
-      const { id, ...data } = row
+      const { ...data } = row
       const { pageId, blockId } = await createInTodo(data)
       data[DOC] = pageId
       data[BLOCK] = blockId

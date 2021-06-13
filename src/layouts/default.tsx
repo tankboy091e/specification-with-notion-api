@@ -4,6 +4,7 @@ import { useAuth } from 'providers/authProvider'
 import Login from 'templates/login'
 import Navigation from 'components/navigation'
 import styles from 'sass/layouts/default.module.scss'
+import Footer from 'components/footer'
 
 export default function Layout({
   children,
@@ -21,7 +22,7 @@ export default function Layout({
         <main className={styles.main}>
           <Login />
         </main>
-        <footer />
+        <Footer />
       </>
     )
   }
@@ -37,7 +38,7 @@ export default function Layout({
       <main className={styles.main}>
         { children }
       </main>
-      <footer />
+      <Footer />
     </>
   )
 }

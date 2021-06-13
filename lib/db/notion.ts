@@ -77,16 +77,20 @@ export async function createInDatabase(data: any) {
   // eslint-disable-next-line no-shadow
   const properties = {}
 
-  for (const property in data) {
-    if (Object.prototype.hasOwnProperty.call(data, property)) {
-      const { type } = database.properties[property]
+  for (const key in data) {
+    if (Object.prototype.hasOwnProperty.call(data, key)) {
+      const property = database.properties[key]
+      if (!property) {
+        continue
+      }
       const getValue = () => {
+        const { type } = property
         if (type === 'title') {
           return {
             title: [
               {
                 text: {
-                  content: data[property],
+                  content: data[key],
                 },
               },
             ],
@@ -97,7 +101,7 @@ export async function createInDatabase(data: any) {
             rich_text: [
               {
                 text: {
-                  content: data[property],
+                  content: data[key],
                 },
               },
             ],
@@ -109,7 +113,7 @@ export async function createInDatabase(data: any) {
       if (!value) {
         continue
       }
-      properties[property] = value
+      properties[key] = value
     }
   }
 
@@ -170,6 +174,22 @@ export async function createInTodo(data: any) {
     children.push(headingBlock)
   } else {
     result.pageId = existingTodo.id
+
+    const stateProperty = existingTodo.properties[STATE]
+    const { id } = stateProperty[stateProperty.type]
+
+    if (id === '3') {
+      const updateProperties = {}
+      updateProperties[STATE] = {
+        select: {
+          id: '2',
+        },
+      }
+      await notion.pages.update({
+        page_id: result.pageId,
+        properties: updateProperties,
+      })
+    }
     const todoBlocks = await retreiveBlock(result.pageId)
 
     const existingHeading = todoBlocks.results

@@ -2,10 +2,10 @@ import Extension from 'components/extension'
 import convertISODate from 'lib/util/date'
 import styles from 'sass/components/table.module.scss'
 import { FiExternalLink } from 'react-icons/fi'
-import React, { SetStateAction } from 'react'
+import React from 'react'
 import HEAD_LIST from 'lib/util/const'
 import Cell from './cell'
-import { RowData, State } from '.'
+import { RowData } from '.'
 import { useTable } from '..'
 
 const {
@@ -15,11 +15,9 @@ const {
 export default function RowInner({
   index,
   data,
-  setState,
 }: {
   index: number
   data: RowData
-  setState: React.Dispatch<SetStateAction<State>>
 }) {
   const { id } = data
 
@@ -71,7 +69,7 @@ export default function RowInner({
       target="_blank"
       rel="noreferrer"
     >
-      {value}
+      {value[0] || '-'}
     </a>
   )
 

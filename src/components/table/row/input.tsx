@@ -7,7 +7,7 @@ import { useTable } from '..'
 import { RowData } from '.'
 
 const {
-  STATE, ROUTE, ID, COMPONENT, FUNCTION, REMARK, EDIT_TIME, ASSIGN, ETC,
+  STATE, ROUTE, ID, COMPONENT, FUNCTION, REMARK, ETC,
 } = HEAD_LIST
 
 export default function InputRow({
@@ -33,13 +33,6 @@ export default function InputRow({
 
   const getValue = (head: string) => {
     switch (head) {
-      case EDIT_TIME:
-        if (edit) {
-          return <button type="button" className={styles.submit}>제출</button>
-        }
-        return null
-      case ASSIGN:
-        return null
       case ETC:
         return (
           <button className={styles.cancle} type="button" onClick={() => cancle(index)}>

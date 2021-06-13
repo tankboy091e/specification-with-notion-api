@@ -21,6 +21,7 @@ module.exports = {
   ],
   rules: {
     semi: [2, 'never'],
+    'class-methods-use-this': 'off',
     'no-case-declarations': 'off',
     'no-await-in-loop': 'off',
     'no-shadow': 'off',

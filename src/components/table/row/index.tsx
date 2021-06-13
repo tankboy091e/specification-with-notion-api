@@ -25,6 +25,6 @@ export default function Row({ index, data }: { index: number, data: RowData }) {
   }
 
   return (
-    <RowInner index={index} data={data} setState={setState} />
+    <RowInner index={index} data={data} />
   )
 }

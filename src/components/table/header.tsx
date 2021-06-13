@@ -1,13 +1,16 @@
+import HEAD_LIST from 'lib/util/const'
 import styles from 'sass/components/table.module.scss'
 import { useTable } from '.'
+
+const { ETC } = HEAD_LIST
 
 export default function TableHeader() {
   const { heads, arrange } = useTable()
 
   return (
     <tr className={styles.row}>
-      {heads.map((head: any) => {
-        if (head === '기타') {
+      {heads.map((head) => {
+        if (head === ETC) {
           return (
             <th key={head} className={styles.cell}>
               <div className={styles.inner}>

@@ -1,12 +1,13 @@
 import fetcher from 'lib/api/fetcher'
 import HEAD_LIST from 'lib/util/const'
 import React, {
-  createContext, SetStateAction, useContext, useEffect, useRef, useState,
+  createContext, SetStateAction, useContext, useEffect, useState,
 } from 'react'
 import styles from 'sass/components/table.module.scss'
 import useSWR from 'swr'
 import AddButton from 'widgets/add-button'
 import TableBody from './body'
+import TableInput from './body/input'
 import Colgroup from './colgroup'
 import TableForm from './form'
 import TableHeader from './header'
@@ -37,7 +38,7 @@ const TableContext = createContext<TableContextProps>(null)
 
 export const useTable = () => useContext(TableContext)
 
-export type State = 'default' | 'pending'
+export type State = 'default' | 'pending' | 'complete'
 
 export default function Table() {
   const { data: table, mutate } = useSWR('/api/table', fetcher)
@@ -46,9 +47,6 @@ export default function Table() {
   const [inputs, setInputs] = useState<number[]>([])
   const [defaultInputData, setDefaultInputData] = useState<{ [key: string]: string }>(null)
   const [currentArrange, setCurrentArrage] = useState<Arrange>({ head: ID, way: 1 })
-  const [arrangeData, setArrangeData] = useState<{ [key: string]: number }>({})
-
-  const arrangeDataRef = useRef(arrangeData)
 
   const heads = [STATE, ROUTE, ID, COMPONENT, FUNCTION, REMARK, ASSIGN, EDIT_TIME, ETC]
 
@@ -77,9 +75,10 @@ export default function Table() {
   }
 
   useEffect(() => {
-    if (state === 'default') {
+    if (state === 'complete') {
       mutate()
       setInputs([])
+      setState('default')
     }
   }, [state])
 
@@ -90,22 +89,10 @@ export default function Table() {
   }, [defaultInputData])
 
   useEffect(() => {
-    arrangeDataRef.current = arrangeData
-  }, [arrangeData])
-
-  useEffect(() => {
     if (inputs.length > 0) {
       window.scrollTo({ behavior: 'smooth', top: document.body.scrollHeight })
     }
   }, [inputs])
-
-  useEffect(() => {
-    const defaultArrangeData = {}
-    heads.forEach((value) => {
-      defaultArrangeData[value] = 1
-    })
-    setArrangeData(defaultArrangeData)
-  }, [])
 
   const value = {
     table,
@@ -129,6 +116,7 @@ export default function Table() {
             <tbody className={styles.body}>
               <TableHeader />
               <TableBody />
+              <TableInput />
             </tbody>
           </table>
           {inputs.length > 0 && <input className={styles.submit} type="submit" value="제출" />}

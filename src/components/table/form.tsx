@@ -5,7 +5,7 @@ import styles from 'sass/components/table.module.scss'
 import { useTable } from '.'
 
 const {
-  ROUTE, ID, COMPONENT, FUNCTION,
+  ID, COMPONENT, FUNCTION,
 } = HEAD_LIST
 
 export default function TableForm({
@@ -17,9 +17,11 @@ export default function TableForm({
 
   const getInputRows = (e: FormEvent<HTMLFormElement>) => {
     const result: Element[] = []
-    e.currentTarget.querySelectorAll('.inputRow').forEach((element) => {
-      result.push(element)
-    })
+    e.currentTarget
+      .querySelectorAll('.inputRow')
+      .forEach((element) => {
+        result.push(element)
+      })
     return result
   }
 
@@ -28,9 +30,7 @@ export default function TableForm({
       id: element.id,
     }
 
-    const textareas = element.querySelectorAll('textarea').values()
-
-    for (const textarea of textareas) {
+    for (const textarea of element.querySelectorAll('textarea').values()) {
       const name = textarea.getAttribute('name')
       const { value } = textarea
       data[name] = value
@@ -40,7 +40,7 @@ export default function TableForm({
   }
 
   const isValidated = (payload: any[]) => {
-    const validations = [ROUTE, ID, COMPONENT, FUNCTION]
+    const validations = [ID, COMPONENT, FUNCTION]
 
     for (const data of payload) {
       for (const validation of validations) {
@@ -78,12 +78,12 @@ export default function TableForm({
     if (res.ok) {
       const { message } = await res.json()
       alert(message)
+      setState('complete')
     } else {
       const { error } = await res.json()
       alert(error)
+      setState('default')
     }
-
-    setState('default')
   }
 
   return (
