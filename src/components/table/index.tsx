@@ -119,7 +119,7 @@ export default function Table() {
               <TableInput />
             </tbody>
           </table>
-          {inputs.length > 0 && <input className={styles.submit} type="submit" value="제출" />}
+          {(inputs.length > 0 && state === 'default') && <input className={styles.submit} type="submit" value="제출" />}
         </TableForm>
       </TableContext.Provider>
       <AddButton onClick={add} />
