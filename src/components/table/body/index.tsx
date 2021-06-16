@@ -5,7 +5,7 @@ import { useTable } from '..'
 import Row from '../row'
 
 const {
-  STATE, FUNCTION, ASSIGN,
+  STATE, FUNCTION, ASSIGN, COMPONENT, ID, EDIT_TIME,
 } = HEAD_LIST
 
 export default function TableBody() {
@@ -52,6 +52,15 @@ export default function TableBody() {
     const vb = getValue(head, b)
     if (va > vb) return 1 * way
     if (va < vb) return -1 * way
+    if (head === STATE) {
+      return sort(ID, 1, a, b)
+    }
+    if (head === ID) {
+      return sort(COMPONENT, 1, a, b)
+    }
+    if (head === COMPONENT) {
+      return sort(EDIT_TIME, 1, a, b)
+    }
     return 0
   }
 
